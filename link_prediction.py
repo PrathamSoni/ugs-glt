@@ -131,8 +131,8 @@ if __name__ == "__main__":
         module=gnn,
         graph=data,
         lr=8e-3,
-        reg_graph=0.01,
-        reg_model=0.01,
+        reg_graph=0.001,
+        reg_model=0.001,
         prune_rate_graph=0.05,
         prune_rate_model=0.8,
         optim_args={"weight_decay": 8e-5},
@@ -140,7 +140,7 @@ if __name__ == "__main__":
         verbose=args.verbose,
         ignore_keys={"eps"},
         max_train_epochs=200,
-        loss_fn=torch.nn.BCEWithLogitsLoss()
+        loss_fn=torch.nn.functional.binary_cross_entropy_with_logits
     )
 
     initial_params, mask_dict = trainer.prune()
