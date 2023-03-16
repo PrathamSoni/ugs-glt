@@ -51,8 +51,12 @@ def baseline(model: Module, graph: Data, verbose: bool = False):
 
 if __name__ == "__main__":
     parser = ArgumentParser()
-    parser.add_argument("--dataset")
-    parser.add_argument("--model")
+    parser.add_argument('-d', "--dataset", default="Cora")
+    parser.add_argument('-m', "--model", default="gcn")
+    parser.add_argument("--reg_graph", default=.001, type=float)
+    parser.add_argument("--reg_model", default=.001, type=float)
+    parser.add_argument("--prune_rate_graph", default=.05, type=float)
+    parser.add_argument("--prune_rate_model", default=.8, type=float)
     parser.add_argument('-v', '--verbose', action='store_true')
     args = parser.parse_args()
 
@@ -93,17 +97,17 @@ if __name__ == "__main__":
     else:
         raise ValueError("model must be one of gcn, gin, gat")
 
-    # baseline(gnn, data, args.verbose)
+    baseline(gnn, data, args.verbose)
 
     trainer = GLTSearch(
         task="node classification",
         module=gnn,
         graph=data,
         lr=8e-3,
-        reg_graph=0.01,
-        reg_model=0.01,
-        prune_rate_graph=0.05,
-        prune_rate_model=0.8,
+        reg_graph=args.reg_graph,
+        reg_model=args.reg_model,
+        prune_rate_graph=args.prune_rate_graph,
+        prune_rate_model=args.prune_rate_model,
         optim_args={"weight_decay": 8e-5},
         seed=1234,
         verbose=args.verbose,

@@ -229,8 +229,8 @@ class GLTSearch:
                     ).sum()
                     test_acc = int(correct_test) / int(self.graph.test_mask.sum())
 
-                    if val_acc > best_val_acc:
-                        best_val_acc = val_acc
+                    if val_acc > best_val:
+                        best_val = val_acc
                         final_test = test_acc
 
                         if ugs:
