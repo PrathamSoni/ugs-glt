@@ -167,3 +167,15 @@ class PrunedModel(Module):
             for param_path, _ in self.module.named_parameters(recurse=True)
             if not self._is_injected_parameter(param_path)
         ]
+
+
+class LinkPredictor(Module):
+    def __init__(self, model):
+        super().__init__()
+        self.model = model
+
+    def forward(self, x, edge_index, edge_weight, edges):
+        x = self.model(x, edge_index, edge_weight=edge_weight)
+        edge_feat_i = x[edges[0]]
+        edge_feat_j = x[edges[1]]
+        return (edge_feat_i * edge_feat_j).sum(dim=-1)

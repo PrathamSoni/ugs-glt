@@ -5,7 +5,6 @@ from random import randint
 from typing import Dict, Any, Tuple, Type, Callable, Optional
 
 import torch
-import torch_geometric
 import tqdm
 from sklearn import metrics
 from torch.nn import Module, Parameter
@@ -194,11 +193,11 @@ class GLTSearch:
 
                 output = ticket()
 
-                if self.task == "node classification":
+                if self.task == "node_classification":
                     loss = self.loss_fn(
                         output[self.graph.train_mask], self.graph.y[self.graph.train_mask]
                     )
-                elif self.task == "link prediction":
+                elif self.task == "link_prediction":
                     edge_mask = self.graph.train_mask[self.graph.edges[0]] & self.graph.train_mask[self.graph.edges[1]]
                     loss = self.loss_fn(
                         output[edge_mask], self.graph.edge_labels[edge_mask].float()
@@ -217,7 +216,7 @@ class GLTSearch:
                 optimizer.step()
 
                 ticket.eval()
-                if self.task == "node classification":
+                if self.task == "node_classification":
                     preds = ticket().argmax(dim=1)
                     correct_val = (
                             preds[self.graph.val_mask] == self.graph.y[self.graph.val_mask]
@@ -240,7 +239,7 @@ class GLTSearch:
                         {"loss": loss.item(), "val_acc": val_acc, "test_acc": test_acc}
                     )
 
-                elif self.task == "link prediction":
+                elif self.task == "link_prediction":
                     edge_mask = self.graph.val_mask[self.graph.edges[0]] & self.graph.val_mask[self.graph.edges[1]]
                     preds = ticket()
                     val_preds = preds[edge_mask]
@@ -266,5 +265,3 @@ class GLTSearch:
                     raise ValueError(f"{self.task} must be one of node class. or link pred.")
 
         return final_test, best_masks
-
-# TODO: mask + acc checkpoints
