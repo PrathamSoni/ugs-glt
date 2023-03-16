@@ -108,7 +108,7 @@ if __name__ == "__main__":
     parser.add_argument('-v', '--verbose', action='store_true')
     args = parser.parse_args()
 
-    dataset = Planetoid(root=f"/tmp/{args.dataset}", name=args.dataset)
+    dataset = Planetoid(root=f"tmp/{args.dataset}", name=args.dataset)
     print(args.dataset)
     print(args.model)
     data = dataset[0].to(device)
