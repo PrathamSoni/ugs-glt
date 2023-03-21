@@ -117,7 +117,6 @@ class PrunedModel(Module):
         pruned_graph = self.graph.clone()
         pruned_graph.edge_weight = adj_mask
         if hasattr(pruned_graph, "edges"):
-
             return self.module(
                 pruned_graph.x, pruned_graph.edge_index, edge_weight=pruned_graph.edge_weight, edges=pruned_graph.edges
             )

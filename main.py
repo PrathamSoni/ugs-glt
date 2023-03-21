@@ -20,7 +20,7 @@ def baseline(model: Module, graph: Data, task, verbose: bool = False):
     best_val = 0.0
     final_test = 0.0
     optimizer = torch.optim.Adam(model.parameters(), lr=8e-3, weight_decay=8e-5)
-    if task == "link prediction":
+    if task == "link_prediction":
         loss_fn = torch.nn.functional.binary_cross_entropy_with_logits
     else:
         loss_fn = torch.nn.functional.cross_entropy
@@ -30,13 +30,15 @@ def baseline(model: Module, graph: Data, task, verbose: bool = False):
             model.train()
             optimizer.zero_grad()
 
-            output = model(graph.x, graph.edge_index, edge_weight=graph.edge_weight, edges=graph.edges)
-
             if task == "node_classification":
+                output = model(graph.x, graph.edge_index, edge_weight=graph.edge_weight)
+
                 loss = loss_fn(
                     output[graph.train_mask], graph.y[graph.train_mask]
                 )
-            elif task == "link prediction":
+            elif task == "link_prediction":
+                output = model(graph.x, graph.edge_index, edge_weight=graph.edge_weight, edges=graph.edges)
+
                 edge_mask = graph.train_mask[graph.edges[0]] & graph.train_mask[graph.edges[1]]
                 loss = loss_fn(
                     output[edge_mask], graph.edge_labels[edge_mask].float()
@@ -63,17 +65,17 @@ def baseline(model: Module, graph: Data, task, verbose: bool = False):
                 t.set_postfix(
                     {"loss": loss.item(), "val_acc": val_acc, "test_acc": test_acc}
                 )
-            elif task == "link prediction":
+            elif task == "link_prediction":
                 preds = model(graph.x, graph.edge_index, edge_weight=graph.edge_weight, edges=graph.edges)
                 edge_mask = graph.val_mask[graph.edges[0]] & graph.val_mask[graph.edges[1]]
                 val_preds = preds[edge_mask]
-                val_gt = graph.edge_labels[edge_mask].detach().numpy()
-                val_auc = metrics.auc(val_gt, torch.sigmoid(val_preds).detach().numpy())
+                val_gt = graph.edge_labels[edge_mask].cpu().detach().numpy()
+                val_auc = metrics.auc(val_gt, torch.sigmoid(val_preds).cpu().detach().numpy())
 
                 edge_mask = graph.test_mask[graph.edges[0]] & graph.test_mask[graph.edges[1]]
                 test_preds = preds[edge_mask]
-                test_gt = graph.edge_labels[edge_mask].detach().numpy()
-                test_auc = metrics.auc(test_gt, torch.sigmoid(test_preds).detach().numpy())
+                test_gt = graph.edge_labels[edge_mask].cpu().detach().numpy()
+                test_auc = metrics.auc(test_gt, torch.sigmoid(test_preds).cpu().detach().numpy())
 
                 if val_auc > best_val:
                     best_val = val_auc
@@ -86,7 +88,7 @@ def baseline(model: Module, graph: Data, task, verbose: bool = False):
                 raise ValueError(f"{task} must be one of node class. or link pred.")
 
     model.load_state_dict(initial_params)
-    print("[BASELINE] Final test accuracy:", final_test)
+    print("[BASELINE] Final test performance:", final_test)
 
 
 def generate_edge_data(dataset):
@@ -149,7 +151,7 @@ if __name__ == "__main__":
     if args.task == "link_prediction":
         gnn = LinkPredictor(gnn)
 
-    baseline(gnn, data, args.task, args.verbose)
+    # baseline(gnn, data, args.task, args.verbose)
 
     if args.task == "link_prediction":
         loss_fn = torch.nn.functional.binary_cross_entropy_with_logits
